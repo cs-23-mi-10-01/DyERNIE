@@ -7,6 +7,47 @@ from rsgd import *
 import datetime
 import os
 from model import *
+from datetime import datetime
+
+
+class Timer:
+    def __init__(self) -> None:
+        self.stopwatches = {}
+
+    def start(self, key):
+        now = datetime.now()
+
+        current_time = now.strftime("%H:%M:%S")
+        print("Stopwatch <" + key + "> started at " + current_time)
+
+        self.stopwatches[key] = now
+    
+    def stop(self, key):
+        now = datetime.now()
+
+        time_delta = now - self.stopwatches[key]
+        current_str = now.strftime("%H:%M:%S")
+        delta_str = self._format_timedelta(time_delta)
+        print("Stopwatch <" + key + "> stopped at " + current_str + ", time elapsed: " + delta_str + ".")
+
+    def _format_timedelta(self, delta) -> str:
+        seconds = int(delta.total_seconds())
+
+        secs_in_a_day = 86400
+        secs_in_a_hour = 3600
+        secs_in_a_min = 60
+
+        days, seconds = divmod(seconds, secs_in_a_day)
+        hours, seconds = divmod(seconds, secs_in_a_hour)
+        minutes, seconds = divmod(seconds, secs_in_a_min)
+
+        time_fmt = f"{hours:02d} hours, {minutes:02d} minutes, {seconds:02d} seconds"
+
+        if days > 0:
+            suffix = "s" if days > 1 else ""
+            return f"{days} day{suffix}, {time_fmt}"
+
+        return time_fmt
 
 class Experiment:
     def __init__(self, curvatures_fixed, learning_rate=[], dim=[], nneg=50,
@@ -60,8 +101,8 @@ class Experiment:
         sr_vocab_eval = self.get_ep_vocab(self.get_data_idxs(d.data), [0, 1, 2, 3])
 
         for j in range(0, len(eval_data_idxs), self.batch_size_eval):
+            print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + "...")
             data_batch = np.array(eval_data_idxs[j:j+self.batch_size_eval])
-
 
             r_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 1]]).T, (1, len(d.entities)))))
             t = to_device(torch.tensor(np.tile(np.array([data_batch[:, 3]]).T, (1, len(d.entities))), dtype=torch.double) / self.time_rescale)
@@ -227,6 +268,7 @@ class Experiment:
                 np.random.shuffle(train_data_idxs)
 
                 for j in range(0, len(train_data_idxs), self.batch_size):
+                    print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + "...")
                     data_batch = np.array(train_data_idxs[j:j+self.batch_size])
                     loss = 0
                     for opt in opts:
@@ -342,11 +384,14 @@ class Experiment:
             file_training.close()
 
 if __name__ == '__main__':
+    timer = Timer()
+    timer.start("main")
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--only_eval", type=str2bool, default=False, help="whethre only evaluation")
     parser.add_argument('--tid_nneg', type=str2bool, default=True,
                         help='whether use time-independent negative sampling or tim-dependent negative sampling')
-    parser.add_argument("--dataset", type=str, default="ICEWS14_completion", nargs="?",
+    parser.add_argument("--dataset", type=str, default="GDELT_completion", nargs="?",
                     help="Which dataset to use.")
     parser.add_argument("--num_iterations", type=int, default=1000, nargs="?",
                     help="Number of iterations.")
@@ -373,7 +418,7 @@ if __name__ == '__main__':
     parser.add_argument("--dropout", type=float, default=0, help="non_zero part of time velocity vector")
     args = parser.parse_args()
     dataset = args.dataset
-    data_dir = "data/%s/" % dataset
+    data_dir = "/app/data/%s/" % dataset
     torch.backends.cudnn.deterministic = True
 
     seed = 40
@@ -388,3 +433,5 @@ if __name__ == '__main__':
                             lr_cur = args.lr_cur,use_cosh = args.use_cosh, time_rescale = args.time_rescale, dropout = args.dropout,
                             tid_nneg=args.tid_nneg, vmax=args.vmax, resume_file = args.resume_file)
     experiment.train_and_eval()
+
+    timer.stop("main")
