@@ -34,6 +34,15 @@ From: ubuntu:18.04
     # Activate conda env
     . /opt/miniconda/bin/activate dyernie
 
+    # Download datasets
+    export SPLIT=1
+
+    rm -r /app/data/*
+    mkdir -p /app/data/icews14/
+    wget https://raw.githubusercontent.com/cs-23-mi-10-01/P10/main/datasets/icews14/format_A/split_$SPLIT/test.txt -O /app/data/icews14/test.txt
+    wget https://raw.githubusercontent.com/cs-23-mi-10-01/P10/main/datasets/icews14/format_A/split_$SPLIT/valid.txt -O /app/data/icews14/valid.txt
+    wget https://raw.githubusercontent.com/cs-23-mi-10-01/P10/main/datasets/icews14/format_A/split_$SPLIT/train.txt -O /app/data/icews14/train.txt
+
     # Test
     echo "PWD and contents:"
     pwd
@@ -57,7 +66,7 @@ From: ubuntu:18.04
 srun singularity build --nv --fakeroot --sandbox dyernie-image singularity.def
 
 # TO LEARN THE MODEL ON THE CLOUD:
-srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --dataset icews14
 
 # TO TEST THE MODEL ON THE CLOUD:
-srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --resume_file saved/ckpt_folder_name/checkpoint_X.pt --eval_data test_data --only_eval 
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --dataset icews14 --resume_file saved/ckpt_folder_name/checkpoint_X.pt --eval_data test_data --only_eval 

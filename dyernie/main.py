@@ -7,7 +7,6 @@ from rsgd import *
 import datetime
 import os
 from model import *
-from datetime import datetime
 
 
 class Timer:
@@ -15,7 +14,7 @@ class Timer:
         self.stopwatches = {}
 
     def start(self, key):
-        now = datetime.now()
+        now = datetime.datetime.now()
 
         current_time = now.strftime("%H:%M:%S")
         print("Stopwatch <" + key + "> started at " + current_time)
@@ -23,7 +22,7 @@ class Timer:
         self.stopwatches[key] = now
     
     def stop(self, key):
-        now = datetime.now()
+        now = datetime.datetime.now()
 
         time_delta = now - self.stopwatches[key]
         current_str = now.strftime("%H:%M:%S")
@@ -185,7 +184,7 @@ class Experiment:
                model.append(DyERNIE_S(d, self.dim[i], self.learning_rate[i], fixed_c=curvature))
             else:
                 model.append(DyERNIE_P(d, self.dim[i], self.learning_rate[i], use_cosh=self.use_cosh, dropout=self.dropout,
-                              vmax=self.vmax))
+                              vmax=self.vmax, fixed_c=curvature))
 
         opts = []
         for i in range(len(model)):
@@ -403,7 +402,7 @@ if __name__ == '__main__':
                     help="Number of negative samples.")
     parser.add_argument("--time_rescale", type=float, default=364, nargs="?",
                         help="scaling parameter for timestamp unit.")
-    parser.add_argument("--save_dir", type=str, default="saved")
+    parser.add_argument("--save_dir", type=str, default="/app/saved")
     parser.add_argument("--eval_ep", type=int, default=1, help='evaluation on the dataset per eval epochs.')
     parser.add_argument("--curvatures_fixed", nargs='+', type=float, default=[-0.346, -0.137, -0.855])
     parser.add_argument("--lr", nargs='+', type=float, default=[50, 50, 50],
