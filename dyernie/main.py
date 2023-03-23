@@ -7,6 +7,7 @@ from rsgd import *
 import datetime
 import os
 from model import *
+
 class Experiment:
     def __init__(self, curvatures_fixed, learning_rate=[], dim=[], nneg=50,
                  num_iterations=500, batch_size=128, batch_size_eval = 256, lr_cur = 0.01, use_cosh = False,
