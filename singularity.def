@@ -35,7 +35,7 @@ From: ubuntu:18.04
     . /opt/miniconda/bin/activate dyernie
 
     # Download datasets
-    export SPLIT=1
+    export SPLIT=original
 
     rm -r /app/data/*
     mkdir -p /app/data/icews14/
