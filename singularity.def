@@ -1,0 +1,62 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%setup
+    #mkdir /app/
+
+%files
+    ./dyernie/* /app/
+
+%post
+    # Set working dir
+    cd /app/
+    
+    # Gitignore the new container
+    echo "*" > /.gitignore
+
+    # Pre-requisite installs
+    apt-get -y update
+    apt-get -y install wget
+
+    # miniconda3: get miniconda3
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py38_4.12.0-Linux-x86_64.sh -O miniconda.sh
+
+    # install conda
+    bash miniconda.sh -b -p /opt/miniconda
+    export PATH="/opt/miniconda/bin:$PATH"
+
+    # install conda environment.yml file
+    echo ". /opt/miniconda/etc/profile.d/conda.sh" >> $SINGULARITY_ENVIRONMENT
+    echo "conda activate $(head -1 environment.yml | cut -d' ' -f2)" >> $SINGULARITY_ENVIRONMENT
+    /opt/miniconda/bin/conda env create -f environment.yml
+
+    # Activate conda env
+    . /opt/miniconda/bin/activate dyernie
+
+    # Test
+    echo "PWD and contents:"
+    pwd
+    ls
+
+%runscript
+    echo "--- Start run ---"
+    echo "executing $@"
+    exec "$@"
+
+%test
+    echo "Test script"
+
+%labels
+    Author jwli21@student.aau.dk
+    Version v0.0.1
+
+
+
+# TO CREATE THE IMAGE ON THE CLOUD:
+srun singularity build --nv --fakeroot --sandbox dyernie-image singularity.def
+
+# TO LEARN THE MODEL ON THE CLOUD:
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py
+
+# TO TEST THE MODEL ON THE CLOUD:
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --resume_file saved/ckpt_folder_name/checkpoint_X.pt --eval_data test_data --only_eval 
