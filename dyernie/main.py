@@ -100,7 +100,7 @@ class Experiment:
         sr_vocab_eval = self.get_ep_vocab(self.get_data_idxs(d.data), [0, 1, 2, 3])
 
         for j in range(0, len(eval_data_idxs), self.batch_size_eval):
-            if j % 100 == 0:
+            if j % 200 == 0:
                 print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + \
                       " (" + str(int((float(j) / float(len(eval_data_idxs))) * 100.0)) + "%)...")
             data_batch = np.array(eval_data_idxs[j:j+self.batch_size_eval])
@@ -114,6 +114,10 @@ class Experiment:
             predictions_ob = 0
             for component in model:
                 predictions_ob += component.forward(e1_idx, r_idx, e2_idx_cand, t)
+
+            print(" ------ predictions_ob ------ ")
+            print(predictions_ob[0:1000])
+            raise Exception()
 
             for i in range(data_batch.shape[0]):
                 data_point = data_batch[i, :]
@@ -264,6 +268,7 @@ class Experiment:
             file_training.write("Resume from epoch: " + str(it_start) + "\n")
 
         for it in range(it_start, self.num_iterations+1):
+            epoch_timer.start("epoch " + str(it))
             start_train = time.time()
             for component in model:
                 component.train()
@@ -272,7 +277,7 @@ class Experiment:
                 np.random.shuffle(train_data_idxs)
 
                 for j in range(0, len(train_data_idxs), self.batch_size):
-                    if j % 10 == 0:
+                    if j % 50 == 0:
                         print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + \
                             " (" + str(int((float(j) / float(len(train_data_idxs))) * 100.0)) + "%) ...")
                     
@@ -333,8 +338,6 @@ class Experiment:
 
                 save(os.path.join(main_dirName, "checkpoint_latest.pt"), file_training, model, args,
                      opts, it, self.entity_idxs, self.relation_idxs, self.timestamp_idxs, main_dirName)
-                
-                epoch_timer.stop("from epoch " + str(it_start))
 
             for component in model:
                 component.eval()
@@ -391,6 +394,8 @@ class Experiment:
                          opts, it, self.entity_idxs, self.relation_idxs, self.timestamp_idxs, main_dirName)
 
             file_training.close()
+            epoch_timer.stop("epoch " + str(it))
+            epoch_timer.stop("from epoch " + str(it_start))
 
 if __name__ == '__main__':
     timer = Timer()
