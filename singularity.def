@@ -63,10 +63,10 @@ From: ubuntu:18.04
 
 
 # TO CREATE THE IMAGE ON THE CLOUD:
-srun singularity build --nv --fakeroot --sandbox dyernie-image singularity.def
+srun singularity build --nv --fakeroot --sandbox dyernie-icews14-original singularity.def
 
 # TO LEARN THE MODEL ON THE CLOUD:
-srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --dataset icews14
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-icews14-original python main.py --dataset icews14 --resume_file /app/saved/23-03-2023,11:59:43/checkpoint_latest.pt
 
 # TO TEST THE MODEL ON THE CLOUD:
-srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-image python main.py --dataset icews14 --resume_file saved/ckpt_folder_name/checkpoint_X.pt --eval_data test_data --only_eval 
+srun --gres=gpu singularity run --pwd /app/ --nv --writable dyernie-icews14-original python main.py --dataset icews14 --resume_file saved/ckpt_folder_name/checkpoint_X.pt --eval_data test_data --only_eval 

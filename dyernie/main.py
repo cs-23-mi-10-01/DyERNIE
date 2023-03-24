@@ -100,7 +100,9 @@ class Experiment:
         sr_vocab_eval = self.get_ep_vocab(self.get_data_idxs(d.data), [0, 1, 2, 3])
 
         for j in range(0, len(eval_data_idxs), self.batch_size_eval):
-            print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + "...")
+            if j % 100 == 0:
+                print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + \
+                      " (" + str(int((float(j) / float(len(eval_data_idxs))) * 100.0)) + "%)...")
             data_batch = np.array(eval_data_idxs[j:j+self.batch_size_eval])
 
             r_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 1]]).T, (1, len(d.entities)))))
@@ -138,8 +140,8 @@ class Experiment:
                         hits_tid_ob[hits_level].append(1.0)
                     else:
                         hits_tid_ob[hits_level].append(0.0)
-            if not j%self.batch_size_eval:
-                print("Evaluated sample number: " + str(j))
+            # if not j%self.batch_size_eval:
+            #     print("Evaluated sample number: " + str(j))
 
         for i in range(len(model)):
             curvature = model[i].curvature.data
@@ -220,6 +222,9 @@ class Experiment:
             if not os.path.exists(main_dirName):
                 os.makedirs(main_dirName)
 
+        epoch_timer = Timer()
+        epoch_timer.start("from epoch " + str(it_start))
+
         train_data_idxs = self.get_data_idxs(d.train_data)
         print("Number of training data points: %d" % len(train_data_idxs))
 
@@ -267,7 +272,10 @@ class Experiment:
                 np.random.shuffle(train_data_idxs)
 
                 for j in range(0, len(train_data_idxs), self.batch_size):
-                    print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + "...")
+                    if j % 10 == 0:
+                        print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + \
+                            " (" + str(int((float(j) / float(len(train_data_idxs))) * 100.0)) + "%) ...")
+                    
                     data_batch = np.array(train_data_idxs[j:j+self.batch_size])
                     loss = 0
                     for opt in opts:
@@ -325,6 +333,8 @@ class Experiment:
 
                 save(os.path.join(main_dirName, "checkpoint_latest.pt"), file_training, model, args,
                      opts, it, self.entity_idxs, self.relation_idxs, self.timestamp_idxs, main_dirName)
+                
+                epoch_timer.stop("from epoch " + str(it_start))
 
             for component in model:
                 component.eval()

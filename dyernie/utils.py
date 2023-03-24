@@ -42,6 +42,7 @@ def cosh(x: torch.Tensor) -> torch.Tensor:
 
 def save(filename, log_file, model, args, opts, epoch, entity_idxs, relation_idxs, timestamp_idxs, main_dirName):
     """Save current state to specified file"""
+    print("Saving checkpoint to {}... \n".format(filename))
     log_file.write("Saving checkpoint to {}... \n".format(filename))
     model = [component.state_dict() for component in model]
     torch.save(
@@ -61,8 +62,6 @@ def save(filename, log_file, model, args, opts, epoch, entity_idxs, relation_idx
             "batch_size_eva" : args.batch_size_eva,
             "lr_cur" : args.lr_cur,
             "curvatures_fixed" : args.curvatures_fixed,
-            "curvatures_trainable" : args.curvatures_trainable,
-            "tr_cur" : args.trainable_curvature,
             "main_dirName" : main_dirName,
             "dataset" : args.dataset,
             "time_rescale" : args.time_rescale
