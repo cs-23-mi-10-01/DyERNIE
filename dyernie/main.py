@@ -100,24 +100,20 @@ class Experiment:
         sr_vocab_eval = self.get_ep_vocab(self.get_data_idxs(d.data), [0, 1, 2, 3])
 
         for j in range(0, len(eval_data_idxs), self.batch_size_eval):
-            if j % 200 == 0:
-                print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + \
-                      " (" + str(int((float(j) / float(len(eval_data_idxs))) * 100.0)) + "%)...")
+            #if j % 200 == 0:
+            print("evaluate fact " + str(j * self.batch_size_eval) + "/" + str(len(eval_data_idxs) * self.batch_size) + \
+                    " (" + str(int((float(j) / float(len(eval_data_idxs))) * 100.0)) + "%)...")
             data_batch = np.array(eval_data_idxs[j:j+self.batch_size_eval])
 
-            r_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 1]]).T, (1, len(d.entities)))))
+            r_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 1]]).T, (1, len(d.entities))), dtype=torch.long))
             t = to_device(torch.tensor(np.tile(np.array([data_batch[:, 3]]).T, (1, len(d.entities))), dtype=torch.double) / self.time_rescale)
-            e1_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 0]]).T, (1, len(d.entities)))))
-            e2_idx_gt = to_device(torch.tensor(np.array(data_batch[:, 2])))
-            e2_idx_cand = to_device(torch.tensor(np.tile(np.array([range(len(d.entities))]), (e1_idx.shape[0], 1))))  # batch_size_eval * num_entities
+            e1_idx = to_device(torch.tensor(np.tile(np.array([data_batch[:, 0]]).T, (1, len(d.entities))), dtype=torch.long))
+            e2_idx_gt = to_device(torch.tensor(np.array(data_batch[:, 2]), dtype=torch.long))
+            e2_idx_cand = to_device(torch.tensor(np.tile(np.array([range(len(d.entities))]), (e1_idx.shape[0], 1)), dtype=torch.long))  # batch_size_eval * num_entities
             # rank all entity candidates w.r.t their scores
             predictions_ob = 0
             for component in model:
                 predictions_ob += component.forward(e1_idx, r_idx, e2_idx_cand, t)
-
-            print(" ------ predictions_ob ------ ")
-            print(predictions_ob[0:1000])
-            raise Exception()
 
             for i in range(data_batch.shape[0]):
                 data_point = data_batch[i, :]
@@ -221,7 +217,7 @@ class Experiment:
             self.timestamp_idxs = {d.timestamps[i]: i for i in range(len(d.timestamps))}
             # save models
             now = datetime.datetime.now()
-            dt_string = now.strftime("%d-%m-%Y,%H:%M:%S")
+            dt_string = "bla"
             main_dirName = os.path.join(args.save_dir, dt_string)
             if not os.path.exists(main_dirName):
                 os.makedirs(main_dirName)
@@ -277,9 +273,9 @@ class Experiment:
                 np.random.shuffle(train_data_idxs)
 
                 for j in range(0, len(train_data_idxs), self.batch_size):
-                    if j % 50 == 0:
-                        print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + \
-                            " (" + str(int((float(j) / float(len(train_data_idxs))) * 100.0)) + "%) ...")
+                    #if j % 50 == 0:
+                    print("train fact " + str(j * self.batch_size) + "/" + str(len(train_data_idxs) * self.batch_size) + \
+                        " (" + str(int((float(j) / float(len(train_data_idxs))) * 100.0)) + "%) ...")
                     
                     data_batch = np.array(train_data_idxs[j:j+self.batch_size])
                     loss = 0
@@ -299,9 +295,9 @@ class Experiment:
                                                              corrupt_head=False,
                                                              mult_num=self.nneg)  # batch_size * nneg * 4
 
-                    e1_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 0]]).T, negsamples[:, :, 0]), axis = 1))
-                    r_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 1]]).T, negsamples[:, :, 1]), axis = 1))
-                    e2_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 2]]).T, negsamples[:, :, 2]), axis = 1))
+                    e1_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 0]]).T, negsamples[:, :, 0]), axis = 1), dtype=torch.long)
+                    r_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 1]]).T, negsamples[:, :, 1]), axis = 1), dtype=torch.long)
+                    e2_idx = torch.tensor(np.concatenate((np.array([data_batch[:, 2]]).T, negsamples[:, :, 2]), axis = 1), dtype=torch.long)
                     t = torch.tensor(np.concatenate((np.array([data_batch[:, 3]]).T, negsamples[:, :, 3]), axis = 1), dtype=torch.double)/(self.time_rescale)
                     targets = np.zeros(e1_idx.shape)
                     targets[:, 0] = 1
@@ -432,7 +428,9 @@ if __name__ == '__main__':
     parser.add_argument("--dropout", type=float, default=0, help="non_zero part of time velocity vector")
     args = parser.parse_args()
     dataset = args.dataset
-    data_dir = "/app/data/%s/" % dataset
+    #data_dir = "/app/data/%s/" % dataset
+    data_dir = r"C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\data\icews14_test"
+    args.save_dir = r"C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\save"
     torch.backends.cudnn.deterministic = True
 
     seed = 40

@@ -1,0 +1,24 @@
+===============================
+Resume from epoch: 1
+epoch: 1
+consuming time of this iter: 111.07517719268799
+loss: nan
+Saving checkpoint to C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\save\bla\checkpoint_latest.pt... 
+===============================
+Resume from epoch: 1
+epoch: 1
+consuming time of this iter: 114.89508128166199
+loss: nan
+Saving checkpoint to C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\save\bla\checkpoint_latest.pt... 
+===============================
+Resume from epoch: 1
+epoch: 1
+consuming time of this iter: 114.19318056106567
+loss: nan
+Saving checkpoint to C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\save\bla\checkpoint_latest.pt... 
+===============================
+Resume from epoch: 1
+epoch: 1
+consuming time of this iter: 145.8930094242096
+loss: nan
+Saving checkpoint to C:\Users\Jeppe\Documents\Unistuff\Master\DyERNIE\dyernie\save\bla\checkpoint_latest.pt... 
